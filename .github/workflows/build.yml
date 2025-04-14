@@ -1,0 +1,36 @@
+name: Composer Build Ebook With Ibis PHP
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: Install Deps Ibis Next
+        run: composer install --prefer-dist --no-progress
+      - name: Generate Ebook PDF With Ibis Next Theme Light
+        run: ./vendor/bin/ibis-next pdf -d books/en/
+      - name: Generate Ebook PDF With Ibis Next Theme Dark
+        run: ./vendor/bin/ibis-next pdf -d books/en/ dark
+      - name: Generate Ebook EPUB With Ibis Next
+        run: ./vendor/bin/ibis-next epub -d books/en/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upload-all-ebook
+          path: books/id/export
+          if-no-files-found: error
+          retention-days: 10
