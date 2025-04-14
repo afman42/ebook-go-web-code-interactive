@@ -1,0 +1,5 @@
+{
+    "require": {
+        "hi-folks/ibis-next": "^2.0"
+    }
+}
